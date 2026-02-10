@@ -4,7 +4,7 @@ import { controller as taskController } from '../controllers/taskController.js'
 export const router = express.Router()
 
 //router.get('/tasks', (req, res) => {
-//  res.json([]) // Return an empty array for now})
+//  res.json([]) // Return an empty array for now for initial testing purposes})
 
 router.get('/tasks', taskController.getTasks)
 

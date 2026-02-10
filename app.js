@@ -1,5 +1,6 @@
 import { app } from './src/express.js'
 
+//start the expree server
 const port = process.env.PORT || 3000
 
 app.listen(port, () => {
