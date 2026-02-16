@@ -1,8 +1,9 @@
-import mysql from "mysql2/promise"
-import { config } from "../config/database.js"
+import mysql from 'mysql2/promise'
+import { config } from '../config/database.js'
 
 /**
  * Service (singleton) to manage database operations.
+ *
  * @class
  */
 class DatabaseService {
@@ -10,30 +11,31 @@ class DatabaseService {
 
   /**
    * Connect to the database using the configuration provided.
+   *
    * @async
    * @returns {Promise<void>}
    */
-  async connect() {
+  async connect () {
     try {
       this.#connection = await mysql.createConnection(config)
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error)
     }
 
-    process.on("SIGINT", () => this.closeConnection())
-    process.on("SIGTERM", () => this.closeConnection())
+    process.on('SIGINT', () => this.closeConnection())
+    process.on('SIGTERM', () => this.closeConnection())
   }
 
   /**
    * Execute a database query.
+   *
    * @async
    * @param {string} queryString - The SQL query string.
    * @param {Array} [params=[]] - The parameters for the query.
-   * @returns {Promise<Object>} The result of the query.
+   * @returns {Promise<object>} The result of the query.
    * @throws {Error} If the query execution fails.
    */
-  async query(queryString, params = []) {
+  async query (queryString, params = []) {
     try {
       const [rows] = await this.#connection.execute(queryString, params)
       return rows
@@ -44,17 +46,19 @@ class DatabaseService {
 
   /**
    * Close the database connection pool.
+   *
    * @async
    */
-  async closeConnection() {
+  async closeConnection () {
     try {
       await this.#connection.end()
-      console.log("Database connection closed.")
+      console.log('Database connection closed.')
     } catch (err) {
-      console.error("Error closing the database connection:", err.message)
+      console.error('Error closing the database connection:', err.message)
       throw err
     }
   }
 }
 
 export default new DatabaseService()
+

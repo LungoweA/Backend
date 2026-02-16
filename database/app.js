@@ -1,15 +1,14 @@
+import 'dotenv/config'
 import databaseService from "./src/service/DatabaseService.js"
-import menu from "./src/Menu.js"
+import { app } from './src/express.js'
 
 
 // Connect to the database
 await databaseService.connect()
 
-// Do the menu loop
-do {
-  menu.show()
-} while (await menu.handleInput())
+// To start the express server
+const port = process.env.PORT || 3000
 
-// End the application
-await databaseService.closeConnection()
-process.exit(0)
+app.listen(port, () => {
+  console.log(`Listening on port ${port}`)
+})

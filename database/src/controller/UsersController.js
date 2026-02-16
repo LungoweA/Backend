@@ -1,16 +1,12 @@
-import usersModel from "../model/UsersModel.js"
-import outputHandler from "../view/OutputHandler.js"
+import usersModel from '../model/UsersModel.js'
+import outputHandler from '../view/OutputHandler.js'
 
-/**
- * Controller to perform CRUD fo rhte users collection.
- * @class
- */
 class UsersController {
-  /**
-   * Show all users by fetching data from the model and displaying it via the output handler.
-   * @async
-   */
-  async showUsers() {
+
+  // =====================
+  // CLI methods
+  // =====================
+  async showUsersCLI() {
     try {
       const users = await usersModel.getAllUsers()
       outputHandler.showUsers(users)
@@ -19,59 +15,87 @@ class UsersController {
     }
   }
 
-  /**
-   * Add a new user to the database.
-   * @async
-   * @param {string} name - The name of the user.
-   * @param {string} email - The email of the user.
-   * @param {string} password - The password for the user.
-   */
-  async addUser(name, email, password) {
+  async addUserCLI(name, email, password) {
     try {
-      const id = await usersModel.addUser(name, email, password)
+      const id = await usersModel.addUser({ username: name, email, password })
       outputHandler.showSuccess(`New user added with ID: ${id}`)
     } catch (error) {
       outputHandler.showError("Could not add user.", error)
     }
   }
 
-  /**
-   * Update an existing user in the database.
-   * @async
-   * @param {number} id - The ID of the user to update.
-   * @param {string} name - The new name of the user.
-   * @param {string} email - The new email of the user.
-   */
-  async updateUser(id, name, email) {
+  async updateUserCLI(id, name, email) {
     try {
-      const success = await usersModel.updateUser(id, name, email)
-      if (success) {
-        outputHandler.showSuccess(`User with ID ${id} updated.`)
-      } else {
-        outputHandler.showError(`No user found with ID ${id}.`)
-      }
+      const success = await usersModel.updateUser(id, { username: name, email })
+      if (success) outputHandler.showSuccess(`User ${id} updated.`)
+      else outputHandler.showError(`No user found with ID ${id}.`)
     } catch (error) {
       outputHandler.showError("Could not update user.", error)
     }
   }
 
-  /**
-   * Delete a user from the database.
-   * @async
-   * @param {number} id - The ID of the user to delete.
-   */
-  async deleteUser(id) {
+  async deleteUserCLI(id) {
     try {
       const success = await usersModel.deleteUser(id)
-      if (success) {
-        outputHandler.showSuccess(`User with ID ${id} deleted.`)
-      } else {
-        outputHandler.showError(`No user found with ID ${id}.`)
-      }
+      if (success) outputHandler.showSuccess(`User ${id} deleted.`)
+      else outputHandler.showError(`No user found with ID ${id}.`)
     } catch (error) {
       outputHandler.showError("Could not delete user.", error)
     }
   }
+
+  // =====================
+  // REST/Express methods
+  // =====================
+  verifyUserId(req, res, next, id) {
+    try {
+      req.userId = usersModel.verifyUserId(id)
+      next()
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+
+  async getAllUsers(req, res, next) {
+    try {
+      const users = await usersModel.getAllUsers()
+      res.json(users)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async addUser(req, res, next) {
+    try {
+      const user = req.body
+      const id = await usersModel.addUser(user)
+      res.status(201).json({ id })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async updateUser(req, res, next) {
+    try {
+      const user = req.body
+      const success = await usersModel.updateUser(req.userId, user)
+      if (success) res.json(user)
+      else res.status(404).json({ error: 'User not found' })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async deleteUser(req, res, next) {
+    try {
+      const success = await usersModel.deleteUser(req.userId)
+      if (success) res.status(204).end()
+      else res.status(404).json({ error: 'User not found' })
+    } catch (error) {
+      next(error)
+    }
+  }
+
 }
 
 export default new UsersController()
